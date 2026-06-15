@@ -1,0 +1,13 @@
+.aws/
+.env
+*.env
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+node_modules/
+dist/
+package-lock.json
+package.json
+
