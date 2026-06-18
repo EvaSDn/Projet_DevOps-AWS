@@ -1,0 +1,117 @@
+name: CI/CD Pipeline BoiteAVoisins
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # npm run lint + npm test (Push + PR)
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      # Backend
+      - run: npm ci
+        working-directory: ./backend
+      - run: npm run lint
+        working-directory: ./backend
+      - run: npm test
+        working-directory: ./backend
+        
+      # Frontend
+      - run: npm ci
+        working-directory: ./frontend
+      - run: npm run lint
+        working-directory: ./frontend
+
+  # IaC: tfsec sur le code Terraform
+  terraform-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ./infra
+
+  # CodeQL (SAST) (Push)
+  codeql-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # SonarQube/SonarCloud (Push)
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Snyk (PR sur main)
+  dependency-scan:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # docker build + Trivy (Après lint+test)
+  build-and-scan-image:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t boiteavoisins-backend:latest ./backend
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'boiteavoisins-backend:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # aws ecs update-service (Push sur develop)
+  deploy-staging:
+    needs: build-and-scan-image
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to ECS Staging
+        run: echo "aws ecs update-service-cluster boiteavoisins-staging --service boiteavoisins-staging-backend --force-new-deployment"
+
+  # aws ecs update-service (Push sur main - avec approbation)
+  deploy-production:
+    needs: build-and-scan-image
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy to ECS Production
+        run: echo "aws ecs update-service-cluster boiteavoisins-production --service boiteavoisins-production-backend --force-new-deployment"
