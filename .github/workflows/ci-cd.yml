@@ -80,6 +80,8 @@ jobs:
   build-and-scan-image:
     needs: lint-and-test
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # Add this line
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
