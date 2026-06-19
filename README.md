@@ -1,48 +1,40 @@
-\# Boîte À Voisins - Projet DevSecOps / AWS
+# Boîte À Voisins - Projet DevSecOps / AWS
 
 
 
-\## Description du projet
+## Description du projet
 
-\[Ajouter ici la description de l'application Boîte À Voisins]
+Projet DevOps et AWS
 
+## Procédure de déploiement
 
+### Infrastructure (AWS-1 \& AWS-2)
 
-\## Schéma d'architecture
+1. Bootstrap Terraform (S3 + DynamoDB)
 
-\[Insérer le lien vers l'image du schéma d'architecture AWS (VPC, ALB, ECS Fargate, RDS, S3/CloudFront)]
+2. Déploiement des modules VPC, Secrets, RDS
 
+3. Déploiement de l'ALB et ECR
 
+4. Push de l'image Docker sur ECR
 
-\## Procédure de déploiement
+5. Déploiement ECS Fargate et application du schéma SQL (ECS Exec)
 
-\### Infrastructure (AWS-1 \& AWS-2)
-
-1\. Bootstrap Terraform (S3 + DynamoDB)
-
-2\. Déploiement des modules VPC, Secrets, RDS
-
-3\. Déploiement de l'ALB et ECR
-
-4\. Push de l'image Docker sur ECR
-
-5\. Déploiement ECS Fargate et application du schéma SQL (ECS Exec)
-
-6\. Déploiement S3 + CloudFront et upload du frontend
+6. Déploiement S3 + CloudFront et upload du frontend
 
 
 
-\### Application (CI/CD)
+### Application (CI/CD)
 
 Le déploiement applicatif est automatisé via GitHub Actions :
 
-\- \*\*Staging\*\* : Déployé automatiquement à chaque push sur la branche `develop`.
+- **Staging** : Déployé automatiquement à chaque push sur la branche `develop`.
 
-\- \*\*Production\*\* : Déployé lors d'un push sur `main` (nécessite une approbation manuelle).
+- **Production** : Déployé lors d'un push sur `main` (nécessite une approbation manuelle).
 
 
 
-\## Variables d'environnement partagées
+## Variables d'environnement partagées
 
 | Clé | Valeur |
 
@@ -54,21 +46,21 @@ Le déploiement applicatif est automatisé via GitHub Actions :
 
 | RDS Database | `boiteavoisins` |
 
-| VITE\_API\_URL | `http://\[DNS\_ALB]` |
+| VITE_API_URL | `http://[DNS_ALB]` |
 
 
 
-\*(Voir AWS Secrets Manager pour les mots de passe et le secret JWT).\*
+*(Voir AWS Secrets Manager pour les mots de passe et le secret JWT).*
 
 
 
-\## Procédure de Rollback
+## Procédure de Rollback
 
 En cas d'échec d'un déploiement ou de crash en production :
 
-1\. \*\*Automatique (ECS Circuit Breaker)\*\* : Si les health checks de la nouvelle version échouent, ECS annulera le déploiement automatiquement.
+1. **Automatique (ECS Circuit Breaker)** : Si les health checks de la nouvelle version échouent, ECS annulera le déploiement automatiquement.
 
-2\. \*\*Manuel (Ancienne Task Definition)\*\* : 
+2. **Manuel (Ancienne Task Definition)** : 
 
 &#x20;  - Aller dans la console AWS ECS.
 
