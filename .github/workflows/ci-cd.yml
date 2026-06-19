@@ -19,11 +19,11 @@ jobs:
           
       # Backend
       - run: npm ci
-        working-directory: ./backend
+        working-directory: ./boiteavoisins/backend
       - run: npm run lint
-        working-directory: ./backend
+        working-directory: ./boiteavoisins/backend
       - run: npm test
-        working-directory: ./backend
+        working-directory: ./boiteavoisins/backend
         
       # Frontend
       - run: npm ci
@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
-        run: docker build -t boiteavoisins-backend:latest ./backend
+        run: docker build -t boiteavoisins-backend:latest ./boiteavoisins/backend
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
