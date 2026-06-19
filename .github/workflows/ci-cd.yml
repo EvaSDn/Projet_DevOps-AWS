@@ -27,9 +27,9 @@ jobs:
         
       # Frontend
       - run: npm ci
-        working-directory: ./frontend
+        working-directory: ./boiteavoisins/frontend
       - run: npm run lint
-        working-directory: ./frontend
+        working-directory: ./boiteavoisins/frontend
 
   # IaC: tfsec sur le code Terraform
   terraform-scan:
