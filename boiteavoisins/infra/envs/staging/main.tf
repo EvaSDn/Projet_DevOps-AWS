@@ -29,6 +29,7 @@ module "alb" {
   env               = "staging"
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
+  ecs_sg_id         = module.sg_ecs.ecs_sg_id
 }
 
 module "ecs" {
@@ -57,3 +58,6 @@ output "rds_secret_arn" {
   sensitive = true
 }
 output "jwt_secret_arn" { value = module.secrets.jwt_secret_arn }
+
+# Outputs ALB (etape 1)
+output "alb_dns_name" { value = module.alb.alb_dns_name }
