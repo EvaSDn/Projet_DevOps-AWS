@@ -1,3 +1,8 @@
+variable "image_uri" {
+  description = "URI de l image backend dans ECR (specifique au compte, defini dans terraform.tfvars)"
+  type        = string
+}
+
 
 module "vpc" {
   source = "../../modules/vpc"
@@ -42,7 +47,7 @@ module "ecs" {
   db_secret_arn          = module.rds.db_secret_arn
   jwt_secret_arn         = module.secrets.jwt_secret_arn
   db_endpoint            = module.rds.db_endpoint
-  image_uri              = "placeholder"
+  image_uri              = var.image_uri
 }
 
 module "frontend" {
