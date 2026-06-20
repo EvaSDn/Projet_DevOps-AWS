@@ -16,7 +16,7 @@ variable "ecs_sg_id" { type = string }
 # ---------------------------------------------------------------------
 resource "aws_security_group" "alb" {
   name        = "boiteavoisins-${var.env}-alb"
-  description = "SG de l'ALB public (HTTP 80 depuis Internet)"
+  description = "SG de l ALB public (HTTP 80 depuis Internet)"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -44,7 +44,7 @@ resource "aws_security_group" "alb" {
 # ---------------------------------------------------------------------
 resource "aws_vpc_security_group_ingress_rule" "ecs_from_alb" {
   security_group_id            = var.ecs_sg_id
-  description                  = "Backend 4000 uniquement depuis l'ALB"
+  description                  = "Backend 4000 uniquement depuis l ALB"
   from_port                    = 4000
   to_port                      = 4000
   ip_protocol                  = "tcp"
