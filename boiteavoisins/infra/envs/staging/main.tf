@@ -66,3 +66,6 @@ output "jwt_secret_arn" { value = module.secrets.jwt_secret_arn }
 
 # Outputs ALB (etape 1)
 output "alb_dns_name" { value = module.alb.alb_dns_name }
+
+# Output frontend (etape 5)
+output "frontend_url" { value = module.frontend.website_url }
